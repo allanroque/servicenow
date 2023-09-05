@@ -21,3 +21,5 @@ group_by:
 
 hostnames:
   - tag:Name
+
+validate_certs: False
