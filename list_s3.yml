@@ -6,13 +6,13 @@
 
   - name: List S3 Buckets
     community.aws.s3_bucket_info:
-      bucket_facts:
+      #  bucket_facts:
       # Choose facts to retrieve
-        bucket_facts:
-        bucket_acl: true
-        bucket_cors: true
-        bucket_encryption: true
-        bucket_location: true
+      #       bucket_facts:
+      #  bucket_acl: true
+      #  bucket_cors: true
+      #  bucket_encryption: true
+      #  bucket_location: true
         ### Other Options
         # bucket_accelerate_configuration: true
         # bucket_lifecycle_configuration: true
@@ -26,7 +26,7 @@
         # bucket_tagging: true
         # bucket_website: true
         # public_access_block: true
-      transform_location: true
+        #transform_location: true
       validate_certs: False
     register: result
 
@@ -34,3 +34,7 @@
     debug:
       var: result
         
+  - name: List buckets
+    ansible.builtin.debug:
+      msg: "{{ result['buckets'] }}"
+      
