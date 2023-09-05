@@ -1,0 +1,14 @@
+---
+- name: List AWS S3 Buckets
+  hosts: localhost
+  gather_facts: no
+
+  tasks:
+    - name: List S3 Buckets
+      community.aws.s3_bucket_info:
+      register: result
+
+    - name: Display Bucket Names
+      debug:
+        var: result
+        
