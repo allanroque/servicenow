@@ -16,6 +16,10 @@
   - name: Get Details of Each Bucket
     community.aws.s3_bucket_info:
       name: "{{ item.name }}"
+      bucket_facts:
+        bucket_location: true
+        bucket_acl: true
+      transform_location: true
       validate_certs: False
     loop: "{{ result.buckets }}"
     register: bucket_details
