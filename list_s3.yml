@@ -14,7 +14,7 @@
       var: result
 
   - name: Get Details of Each Bucket
-    community.aws.s3_bucket_facts:
+    community.aws.s3_bucket_info:
       name: "{{ item.name }}"
       validate_certs: False
     loop: "{{ result.buckets }}"
