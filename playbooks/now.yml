@@ -1,0 +1,10 @@
+# Group hosts automatically, according to values of manufacturer and os columns.
+# Include only records with the specified operating systems.
+# Groups will most likely overlap.
+plugin: servicenow.itsm.now
+group_by:
+  manufacturer:
+  os:
+    includes:
+      - Linux Red Hat
+      - Windows XP

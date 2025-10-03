@@ -1,8 +1,0 @@
-cloud/aws
-# reason: Tests broken - https://github.com/ansible-collections/community.aws/issues/985
-disabled
-
-wafv2_resources
-wafv2_resources_info
-wafv2_web_acl
-wafv2_web_acl_info

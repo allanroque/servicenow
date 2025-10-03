@@ -1,0 +1,26 @@
+---
+- name: Automate SNOW 
+  hosts: localhost
+  connection: local
+  collections:
+    - servicenow.itsm
+
+  tasks:
+
+    - name: Create incident
+      servicenow.itsm.incident:
+        state: new
+        caller: "{{ lookup('env', 'SN_USERNAME') }}"
+        short_description: "User created a new incident using Ansible Automation Platform"
+        description: "User {{ lookup('env', 'SN_USERNAME') }} successfully created a new incident!"
+        impact: low
+        urgency: low
+      register: new_incident
+
+    - set_fact:
+        incident_number_cached: "{{ new_incident.record.number }}"
+        cacheable: true
+
+    - debug:
+        msg: "A new incident has been created: {{ new_incident.record.number }}"
+

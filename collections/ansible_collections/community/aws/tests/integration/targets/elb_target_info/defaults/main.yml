@@ -1,3 +1,0 @@
----
-tg_name: "ansible-test-{{ resource_prefix | regex_search('([0-9]+)$') }}-tg"
-lb_name: "ansible-test-{{ resource_prefix | regex_search('([0-9]+)$') }}-lb"

@@ -1,3 +1,0 @@
----
-vpc_name: '{{ resource_prefix }}-ec2-vpc-cagw'
-cagw_name: '{{ resource_prefix }}-ec2-vpc-cagw'

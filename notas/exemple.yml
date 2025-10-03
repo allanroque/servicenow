@@ -1,0 +1,218 @@
+
+
+# ServiceNow Authentication
+---
+- name: Sample playbook
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Create a new incident
+      servicenow.itsm.incident:
+        # Instance data
+        instance:
+          host: https://dev12345.service-now.com
+          username: user
+          password: pass
+          client_id: cid
+          client_secret: csecret
+
+# Input Configuration
+fields:
+  - id: SN_HOST
+    type: string
+    label: Snow Instance
+  - id: SN_USERNAME
+    type: string
+    label: Username
+  - id: SN_PASSWORD
+    type: string
+    label: Password
+    secret: true
+required:
+  - SN_HOST
+  - SN_USERNAME
+  - SN_PASSWORD
+
+# Injector Configuration
+env:
+  SN_HOST: '{{ SN_HOST }}'
+  SN_PASSWORD: '{{ SN_PASSWORD }}'
+  SN_USERNAME: '{{ SN_USERNAME }}'
+
+################
+
+# Use case: Incident management
+
+  # Create an incident - Attach a sosreport to the incident
+    - name: Create new incident
+      servicenow.itsm.incident:
+        caller: admin
+        state: new
+        short_description: Demo incident
+        attachments:
+          path: /tmp/sosreport.bz2
+        impact: low
+        urgency: low
+      register: incident
+
+  # Create a problem - Attach it to existing incident
+    - name: Create a problem from incident
+      servicenow.itsm.problem:
+        short_description: Demo problem
+      register: problem
+
+    - name: Update incident with a problem information
+      servicenow.itsm.incident:
+        number: "{{ incident.record.number }}"
+        state: in_progress
+        other:
+          problem_id: "{{ problem.record.sys_id }}"
+
+
+  # Change the state of the problem - Create a change request
+
+    - name: Assign problem for assessment
+      servicenow.itsm.problem:
+        sys_id: "{{ problem.record.sys_id }}"
+        state: assess
+        assigned_to: problem.manager
+
+    - name: Create change request for resolving a problem
+      servicenow.itsm.change_request:
+        state: new
+        type: standard
+        short_description: Demo change request
+        template: Clear BGP sessions on a Cisco router - 1
+        other:
+          parent: "{{ problem.record.sys_id }}"
+      register: change
+
+
+  # Mark the problem for root cause analysis - Fix the problem
+    - name: Mark the problem for root cause analysis
+      servicenow.itsm.problem:
+        number: "{{ problem.record.number }}"
+        state: root_cause_analysis
+        cause_notes: Document thoroughly!
+        other:
+          rfc: "{{ change.record.sys_id }}"
+
+    - name: Start fixing the problem
+      servicenow.itsm.problem:
+        sys_id: "{{ problem.record.sys_id }}"
+        state: fix_in_progress
+        fix_notes: Detailed fix description here.
+
+
+  # Inventory configuration - Query parameter allows for reusing of ServiceNow filters and operators just like in modules
+
+---
+plugin: servicenow.itsm.now
+query:
+  -os: = Linux Red Hat
+  -os: = Windows XP
+keyed_groups:
+key: os
+prefix: os
+
+  # Example output
+ansible-inventory -i inventory.now.yaml --graph
+ @all:
+  |--@os_Linux_Red_Hat:
+  |  |--FileServerFloor1
+  |  |--FileServerFloor2
+  |--@os_Windows_XP:
+  |  |--DatabaseServer1
+  |  |--DatabaseServer2
+...
+
+  # Add/update linux instance in CMDB
+    - name: Register instance in ServiceNow
+      servicenow.itsm.configuration_item:
+        name: “{{ item.hostname }}”
+        ip_address: "{{ item.default_ip }}"
+        mac_address: “{{ item.default_mac }}”
+        assigned_to: “{{ username }}”
+        other:
+          sys_class_name: cmdb_ci_ec2_instance
+      loop: “{{ node_info }}”
+      register: item
+
+  # Ansible based mappings
+   - name: Retrieve all incidents
+       servicenow.itsm.incident_info:
+	     incident_mapping:
+  	       state:
+           	1: "new"
+    	        2: "in_progress"
+    	        3: "on_hold"
+    	        4: "resolved"
+    	        5: "closed"
+    	        6: "canceled"
+    	        7: "test"
+     register: result
+
+################
+
+
+
+# Ansible based mappings
+
+# - ServiceNow choice lists can be updated for things like problem/incident/change request, etc.
+# - Choice lists contain things like incident state of: New, Known Issue, Investigating, Closed and are customizable
+# - As choice lists are modified in ServiceNow, mappings allow to keep Ansible in sync with customized choice lists
+# - Makes state transitions more predictable by using the value instead of the number ID
+
+
+- name: Retrieve all incidents
+       servicenow.itsm.incident_info:
+	     incident_mapping:
+  	       state:
+           	1: "new"
+    	        2: "in_progress"
+    	        3: "on_hold"
+    	        4: "resolved"
+    	        5: "closed"
+    	        6: "canceled"
+    	        7: "test"
+     register: result
+
+
+# Ansible based mappings - variables in job templates
+
+mapping:
+  problem:
+    state:
+      '1': open
+      '2': known_error
+      '3': pending_change
+      '4': closed_resolved
+      '5': closed
+    problem_state:
+      '1': open
+      '2': known_error
+      '3': pending_change
+      '4': closed_resolved
+      '5': closed
+
+{
+  "mapping": {
+    "problem": {
+      "state": {
+        "1": "open",
+        "2": "known_error",
+        "3": "pending_change",
+        "4": "closed_resolved",
+        "5": "closed"
+      },
+      "problem_state": {
+        "1": "open",
+        "2": "known_error",
+        "3": "pending_change",
+        "4": "closed_resolved",
+        "5": "closed"
+      }
+    }
+  }
+}

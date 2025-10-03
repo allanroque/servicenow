@@ -1,3 +1,0 @@
-instance_name: "{{ resource_prefix }}_instance"
-snapshot_name: "{{ resource_prefix }}_instance_snapshot"
-zone: "{{ aws_region }}a"

@@ -1,2 +1,0 @@
----
-web_acl_name: '{{ tiny_prefix }}-web-acl'

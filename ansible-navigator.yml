@@ -1,0 +1,24 @@
+---
+ansible-navigator:
+  execution-environment:
+    enabled: true
+    container-engine: podman
+    image: quay.io/acme_corp/servicenow-ee:latest
+    pull:
+      policy: never
+    environment-variables:
+      pass:
+      - SN_HOST
+      - SN_USERNAME
+      - SN_PASSWORD
+      - INSTRUQT_PARTICIPANT_ID
+  playbook-artifact:
+    enable: true
+    save-as: "{playbook_dir}/artifacts/{playbook_name}-artifact-{time_stamp}.json"
+  logging:
+    append: true
+    file: artifacts/ansible-navigator.log
+    level: warning
+  editor:
+    command: code-server {filename}
+    console: false
